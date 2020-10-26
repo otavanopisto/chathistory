@@ -79,7 +79,7 @@ public class IQChatHistoryHandler extends IQHandler {
       sqlParams.add(before);
     }
     else if (beforeId > 0) {
-      sql.append(" and id<? order by sentDate desc");
+      sql.append(" and messageID<? order by sentDate desc");
       sqlParams.add(beforeId);
     }
     else {
@@ -121,10 +121,10 @@ public class IQChatHistoryHandler extends IQHandler {
       Element responseQuery = response.setChildElement("query", NAMESPACE);
       String queryId = packet.getChildElement().attributeValue("queryId");
       if (!StringUtil.isEmpty(queryId)) {
-        response.getElement().addAttribute("queryId", queryId);
+        responseQuery.addAttribute("queryId", queryId);
       }
       if (!hasMore) {
-        response.getElement().addAttribute("complete", "true");
+        responseQuery.addAttribute("complete", "true");
       }
       Collections.reverse(messages);
       for (Element message : messages) {
