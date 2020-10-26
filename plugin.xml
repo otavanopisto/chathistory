@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin>
+  <class>fi.otavanopisto.chat.history.ChatHistoryPlugin</class>
+  <name>Chat History</name>
+  <description>Plugin for crude retrieval of past chat messages in Openfire</description>
+  <author>Otavan Opisto</author>
+  <version>0.0.1</version>
+  <date>10/26/2020</date>
+  <url>https://otavanopisto.fi/</url>
+  <licenseType>gpl</licenseType>
+</plugin>
