@@ -36,7 +36,7 @@ Get, in chronological order, the latest messages matching the query
       <timestamp>when the message was sent</timestamp>
       <message>message content</message>
     </historyMessage>
-    ... // repeated for as many that were requested or available
+    ... // repeated for as many as were requested or available
   </query>
 </iq>
 ```
@@ -56,11 +56,11 @@ Otherwise use `id` or `timestamp` of the first `historyMessage` in the previous 
 ```
 <iq type="set">
   <query xmlns="otavanopisto:chat:history" queryId="if-you-prefer">
-    <type>chat|groupchat</type>
+    <type>chat|groupchat</type>  <!-- former for private messages, latter for MUC -->
     <with>bare JID of user (chat) or room (groupchat)</with>
     <max>the maximum number of messages to return</max>
-    <before>timestamp of the first message of the previous batch</before> <!-- either this (primary)... -->
-    <before-id>id of the first message of the previous batch</before-id> <!-- ...or this (secondary) -->
+    <before>timestamp of the first message of the previous batch</before> <!-- either this (primary, preferable)... -->
+    <before-id>id of the first message of the previous batch</before-id> <!-- ...or this (secondary, iffy) -->
   </query>
 </iq>
 ```
