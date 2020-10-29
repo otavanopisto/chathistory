@@ -4,7 +4,7 @@ A barbarous plugin to fetch archived messages from Openfire, whether public or p
 
 ## Requirements
 
-Requires Openfire Monitoring Service plugin (https://github.com/igniterealtime/openfire-monitoring-plugin). Tested with Openfire 4.6.0 and Monitoring Service 2.1.0. Probably works with slightly earlier versions of either.
+Requires Openfire Monitoring Service plugin (https://github.com/igniterealtime/openfire-monitoring-plugin). Tested with Openfire 4.6.0 and Monitoring Service 2.1.0. Probably also works with slightly earlier versions of either.
 
 ## Install
 

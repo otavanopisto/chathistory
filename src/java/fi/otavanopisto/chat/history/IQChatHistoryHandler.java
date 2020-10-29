@@ -14,7 +14,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
 import org.dom4j.QName;
-import org.eclipse.jetty.util.StringUtil;
 import org.jivesoftware.database.DbConnectionManager;
 import org.jivesoftware.openfire.IQHandlerInfo;
 import org.jivesoftware.openfire.auth.UnauthorizedException;
@@ -120,7 +119,7 @@ public class IQChatHistoryHandler extends IQHandler {
       IQ response = IQ.createResultIQ(packet);
       Element responseQuery = response.setChildElement("query", NAMESPACE);
       String queryId = packet.getChildElement().attributeValue("queryId");
-      if (!StringUtil.isEmpty(queryId)) {
+      if (!StringUtils.isEmpty(queryId)) {
         responseQuery.addAttribute("queryId", queryId);
       }
       if (!hasMore) {
