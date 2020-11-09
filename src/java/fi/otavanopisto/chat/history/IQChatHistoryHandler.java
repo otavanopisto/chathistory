@@ -74,16 +74,14 @@ public class IQChatHistoryHandler extends IQHandler {
           String.format("type attribute needs to be chat|groupchat, was %s", type));
     }
     if (before > 0) {
-      sql.append(" and sentDate<? order by sentDate desc");
+      sql.append(" and sentDate<?");
       sqlParams.add(before);
     }
     else if (beforeId > 0) {
-      sql.append(" and messageID<? order by sentDate desc");
+      sql.append(" and messageID<?");
       sqlParams.add(beforeId);
     }
-    else {
-      sql.append(" order by sentDate desc");
-    }
+    sql.append(" order by sentDate desc");
     if (max > 0) {
       sql.append(" limit ?");
       sqlParams.add(max + 1);
