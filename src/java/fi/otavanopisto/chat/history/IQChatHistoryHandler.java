@@ -66,8 +66,23 @@ public class IQChatHistoryHandler extends IQHandler {
       sqlParams.add(packet.getFrom().asBareJID().toString());
     }
     else if (StringUtils.equals("groupchat", type)) {
-      sql.append(" where toJID=?");
+      
+      // Since Monitoring Service plugin stores messages even after a MUC room has been
+      // deleted, limit the MUC history to messages sent after the room was created
+      
+      String roomName = StringUtils.substringBefore(with, "@");
+      String xmppDomain = getXmppDomain();
+      if (StringUtils.isEmpty(xmppDomain)) {
+        return buildEmptyResponse(packet);
+      }
+      String mucService = StringUtils.substringBefore(StringUtils.substringAfter(with, "@"), "." + xmppDomain);
+      Long roomCreationDate = getRoomCreationDate(mucService, roomName);
+      if (roomCreationDate == null) {
+        return buildEmptyResponse(packet);
+      }
+      sql.append(" where toJID=? and sentDate>?");
       sqlParams.add(with);
+      sqlParams.add(roomCreationDate);
     }
     else {
       return buildErrorResponse(packet, PacketError.Condition.bad_request,
@@ -136,6 +151,64 @@ public class IQChatHistoryHandler extends IQHandler {
     finally {
       DbConnectionManager.closeConnection(resultSet, preparedStatement, connection);
     }
+  }
+  
+  private Long getRoomCreationDate(String mucService, String roomName) {
+    Long creationDate = null;
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    try {
+      connection = DbConnectionManager.getConnection();
+      preparedStatement = connection.prepareStatement("select r.creationDate from ofmucroom r, ofmucservice s where r.serviceId=s.serviceId and s.subdomain=? and r.name=?");
+      preparedStatement.setString(1, mucService);
+      preparedStatement.setString(2, roomName);
+      resultSet = preparedStatement.executeQuery();
+      if (resultSet.next()) {
+        creationDate = Long.valueOf(resultSet.getString("creationDate"));
+      }
+    }
+    catch (SQLException sqle) {
+      logger.error("Error fetching room creation date", sqle);
+    }
+    finally {
+      DbConnectionManager.closeConnection(resultSet, preparedStatement, connection);
+    }
+    return creationDate;
+  }
+  
+  private String getXmppDomain() {
+    String domain = null;
+    Connection connection = null;
+    PreparedStatement preparedStatement = null;
+    ResultSet resultSet = null;
+    try {
+      connection = DbConnectionManager.getConnection();
+      preparedStatement = connection.prepareStatement("select propValue from ofproperty where name=?");
+      preparedStatement.setString(1, "xmpp.domain");
+      resultSet = preparedStatement.executeQuery();
+      if (resultSet.next()) {
+        domain = resultSet.getString("propValue");
+      }
+    }
+    catch (SQLException sqle) {
+      logger.error("Error fetching XMPP domain", sqle);
+    }
+    finally {
+      DbConnectionManager.closeConnection(resultSet, preparedStatement, connection);
+    }
+    return domain;
+  }
+
+  private IQ buildEmptyResponse(IQ packet) {
+    IQ response = IQ.createResultIQ(packet);
+    Element responseQuery = response.setChildElement("query", NAMESPACE);
+    String queryId = packet.getChildElement().attributeValue("queryId");
+    if (!StringUtils.isEmpty(queryId)) {
+      responseQuery.addAttribute("queryId", queryId);
+    }
+    responseQuery.addAttribute("complete", "true");
+    return response;
   }
 
   private IQ buildErrorResponse(IQ packet, PacketError.Condition condition, String message) {
