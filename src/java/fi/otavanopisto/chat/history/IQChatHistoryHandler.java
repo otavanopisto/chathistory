@@ -51,8 +51,14 @@ public class IQChatHistoryHandler extends IQHandler {
   public IQ handleIQ(IQ packet) throws UnauthorizedException {
     Element query = packet.getChildElement();
     String type = query.element("type").getText();
-    if (StringUtils.equals(type,  "groupchat") && query.element("includeStanzaIds") != null) {
-      return handleIQWithStanzas(packet);
+    if (query.element("includeStanzaIds") != null) {
+      if (StringUtils.equals(type,  "groupchat")) {
+        return handleIQWithStanzas(packet);
+      }
+      else {
+        return buildErrorResponse(packet, PacketError.Condition.bad_request,
+            String.format("includeStanzaIds is only valid with type groupchat, was %s", type));
+      }
     }
     String with = query.element("with").getText();
     Element maxElement = query.element("max");
@@ -94,7 +100,7 @@ public class IQChatHistoryHandler extends IQHandler {
     }
     else {
       return buildErrorResponse(packet, PacketError.Condition.bad_request,
-          String.format("type attribute needs to be chat|groupchat, was %s", type));
+          String.format("type needs to be chat|groupchat, was %s", type));
     }
     if (before > 0) {
       sql.append(" and sentDate<?");
