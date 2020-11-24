@@ -26,6 +26,8 @@ import org.jivesoftware.util.XMPPDateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xmpp.packet.IQ;
@@ -228,6 +230,7 @@ public class IQChatHistoryHandler extends IQHandler {
         }
         
         String stanzaId = null;
+        NamedNodeMap bodyAttributes = null;
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         try {
           DocumentBuilder builder = factory.newDocumentBuilder();
@@ -235,6 +238,10 @@ public class IQChatHistoryHandler extends IQHandler {
           NodeList nodeList = doc.getDocumentElement().getElementsByTagName("stanza-id");
           if (nodeList.getLength() == 1) {
             stanzaId = nodeList.item(0).getAttributes().getNamedItem("id").getNodeValue();
+          }
+          nodeList = doc.getDocumentElement().getElementsByTagName("body");
+          if (nodeList.getLength() == 1) {
+            bodyAttributes = nodeList.item(0).getAttributes();
           }
         }
         catch (Exception e) {
@@ -247,7 +254,14 @@ public class IQChatHistoryHandler extends IQHandler {
         historyMessage.addElement("fromJID").setText(resultSet.getString("sender"));
         historyMessage.addElement("toJID").setText(getFullJid(with, resultSet.getString("nickname")));
         historyMessage.addElement("timestamp").setText(XMPPDateTimeFormat.format(new Date(resultSet.getLong("logTime"))));
-        historyMessage.addElement("message").setText(resultSet.getString("body"));
+        Element messageElement = historyMessage.addElement("message");
+        messageElement.setText(resultSet.getString("body"));
+        if (bodyAttributes != null) {
+          for (int i = 0; i < bodyAttributes.getLength(); i++) {
+            Node bodyAttribute = bodyAttributes.item(i);
+            messageElement.addAttribute(bodyAttribute.getNodeName(), bodyAttribute.getNodeValue());
+          }
+        }
         messages.add(historyMessage);
       }
 
