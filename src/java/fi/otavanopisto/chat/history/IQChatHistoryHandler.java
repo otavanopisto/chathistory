@@ -197,7 +197,7 @@ public class IQChatHistoryHandler extends IQHandler {
 
     ArrayList<Object> sqlParams = new ArrayList<Object>();
     StringBuilder sql = new StringBuilder();
-    sql.append("select sender,nickname,logTime,body,stanza from ofmucconversationlog where roomID=? and cast(logTime as unsigned)>?");
+    sql.append("select sender,nickname,logTime,body,stanza from ofmucconversationlog where roomID=? and cast(logTime as unsigned)>? and nickname is not null");
     sqlParams.add(roomId);
     sqlParams.add(roomCreationDate);
     if (before > 0) {
@@ -250,7 +250,9 @@ public class IQChatHistoryHandler extends IQHandler {
         }        
         
         Element historyMessage = DocumentHelper.createElement(QName.get("historyMessage", NAMESPACE));
-        historyMessage.addElement("stanzaId").setText(stanzaId);
+        if (stanzaId != null) {
+          historyMessage.addElement("stanzaId").setText(stanzaId);
+        }
         historyMessage.addElement("fromJID").setText(resultSet.getString("sender"));
         historyMessage.addElement("toJID").setText(getFullJid(with, resultSet.getString("nickname")));
         historyMessage.addElement("timestamp").setText(XMPPDateTimeFormat.format(new Date(resultSet.getLong("logTime"))));
